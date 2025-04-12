@@ -7,10 +7,10 @@ extern struct rtpkt {
   int mincost[4];    /* min cost to node 0 ... 3 */
   };
 
-extern int TRACE;
-extern int YES;
+extern int TRACE; // TRACE is a global variable that controls the level of debugging output
+extern int YES; 
 extern int NO;
-extern float clocktime;
+extern float clocktime; // Current simulation time
 
 // int connectcosts0[4] = { 0,  1,  3, 7 };
 
@@ -21,14 +21,14 @@ struct distance_table
 
 /* students to write the following two routines, and maybe some others */
 
-int node0_mincost[4];
+int node0_mincost[4]; // Minimum cost to each node from node 0
 
 void rtinit0() 
 {
     printf("\n=== At time t=%.3f, rtinit0() called ===\n", clocktime);
     int i, j;
     
-    // Initialize distance table with infinity
+    // Initialize distance table with infinity (~999)
     for(i = 0; i < 4; i++)
         for(j = 0; j < 4; j++)
             dt0.costs[i][j] = 999;
@@ -42,16 +42,16 @@ void rtinit0()
  
     // Send initial distance vector to neighbors
     struct rtpkt packet;
-    packet.sourceid = 0;
+    packet.sourceid = 0; // Source ID is 0 (this node)
     
     for(i = 0; i < 4; i++) {
-        packet.mincost[i] = dt0.costs[i][i];
-        node0_mincost[i] = dt0.costs[i][i];
+        packet.mincost[i] = dt0.costs[i][i]; // Minimum cost to each node is updated in the packet
+        node0_mincost[i] = dt0.costs[i][i]; // Store minimum costs for node 0
     }
 
 
     printf("Initial distance table for node 0:\n");
-    printdt0(&dt0);
+    printdt0(&dt0); // Print initial distance table
     
     printf("Node 0 sending routing packets to neighbors (1, 2, 3):\n");
     printf("  mincost: %d %d %d %d\n", packet.mincost[0], packet.mincost[1], 
@@ -59,11 +59,11 @@ void rtinit0()
     
   
     // Send to each neighbor
-    packet.destid = 1;
+    packet.destid = 1; // Send to node 1
     tolayer2(packet);
-    packet.destid = 2;
+    packet.destid = 2; // Send to node 2
     tolayer2(packet);
-    packet.destid = 3;
+    packet.destid = 3; // Send to node 3
     tolayer2(packet);
 }
 
@@ -77,19 +77,19 @@ void rtupdate0(rcvdpkt)
            rcvdpkt->mincost[0], rcvdpkt->mincost[1], 
            rcvdpkt->mincost[2], rcvdpkt->mincost[3]);
     
-    int src = rcvdpkt->sourceid;
-    int dest = rcvdpkt->destid;
+    int src = rcvdpkt->sourceid; // Source ID of the received packet
 
     int i, j;
     
-    int dt_changed = 0;
+    int dt_changed = 0; // Flag to check if distance table changed
     
     // Update distance table based on received packet
     for(i = 0; i < 4; i++) {
-                
+        // Check if the cost to reach node i through the source node is less than the current cost
+        // If yes, update the distance table
         if(dt0.costs[i][src] > rcvdpkt->mincost[i] + dt0.costs[src][src]) {
             dt0.costs[i][src] = rcvdpkt->mincost[i] + dt0.costs[src][src];
-            dt_changed = 1;
+            dt_changed = 1; // Distance table changed
         }
     }
 
@@ -101,7 +101,7 @@ void rtupdate0(rcvdpkt)
 
     
     int prev_mincost[4];
-    memcpy(prev_mincost, node0_mincost, sizeof(node0_mincost));
+    memcpy(prev_mincost, node0_mincost, sizeof(node0_mincost)); // Store previous minimum costs
     
 
     // Calculate minimum costs
@@ -111,41 +111,41 @@ void rtupdate0(rcvdpkt)
           if(dt0.costs[i][j] < min)
               min = dt0.costs[i][j];
       }
-      node0_mincost[i] = min;
+      node0_mincost[i] = min; // Update minimum costs for node 0
     }
 
-    int changed = 0;
+    int changed = 0; // Flag to check if minimum costs changed
     for(int i=0;i<4;i++){
         if(prev_mincost[i]!=node0_mincost[i]){
-            changed = 1;
+            changed = 1; // Minimum costs changed
         }
     }
 
     // If distance table changed, send updates to neighbors
     if(changed) {
-        struct rtpkt packet;
+        struct rtpkt packet; // Create a new packet to send updates
         packet.sourceid = 0;
         for (i = 0; i < 4; i++)
-            packet.mincost[i] = node0_mincost[i];
+            packet.mincost[i] = node0_mincost[i]; // Update minimum costs in the packet
         
         printf("\nNode 0 distance table updated to:\n");
-        printdt0(&dt0);
+        printdt0(&dt0); // Print updated distance table
         printf("Node 0 sending routing packets to neighbors with mincost: %d %d %d %d\n",
                packet.mincost[0], packet.mincost[1], 
-               packet.mincost[2], packet.mincost[3]);
+               packet.mincost[2], packet.mincost[3]); // Print updated minimum costs
         printf("\n");
 
         // Send to each neighbor
-        packet.destid = 1;
+        packet.destid = 1; // Send to node 1
         tolayer2(packet);
-        packet.destid = 2;
+        packet.destid = 2; // Send to node 2
         tolayer2(packet);
-        packet.destid = 3;
+        packet.destid = 3; // Send to node 3
         tolayer2(packet);
     } else {
         printf("Minimum costs NOT updated\n");
         printf("Current distance table for node 0:\n");
-        printdt0(&dt0);
+        printdt0(&dt0); // Print current distance table
     }
 }
 
@@ -176,3 +176,8 @@ linkhandler0(linkid, newcost)
 	
 {
 }
+
+
+// References
+// 1. Distance Vector Routing Algorithm: https://en.wikipedia.org/wiki/Distance-vector_routing_protocol
+// 2. Computer Networking: A Top-Down Approach by Kurose and Ross

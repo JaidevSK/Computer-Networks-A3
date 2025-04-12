@@ -7,28 +7,28 @@ extern struct rtpkt {
   int mincost[4];    /* min cost to node 0 ... 3 */
   };
 
-extern int TRACE;
+extern int TRACE; // TRACE is a global variable that controls the level of debugging output
 extern int YES;
 extern int NO;
-extern float clocktime;
+extern float clocktime; // Current simulation time
 
 // int connectcosts1[4] = { 1,  0,  1, 999 };
 
-struct distance_table 
+struct distance_table
 {
   int costs[4][4];
 } dt1;
 
 /* students to write the following two routines, and maybe some others */
 
-int node1_mincost[4];
+int node1_mincost[4]; // Minimum cost to each node from node 1
 
 void rtinit1() 
 {
     printf("\n=== At time t=%.3f, rtinit1() called ===\n", clocktime);
     int i, j;
     
-    // Initialize distance table with infinity
+    // Initialize distance table with infinity (~999)
     for(i = 0; i < 4; i++)
         for(j = 0; j < 4; j++)
             dt1.costs[i][j] = 999;
@@ -41,11 +41,11 @@ void rtinit1()
     
     // Send initial distance vector to neighbors
     struct rtpkt packet;
-    packet.sourceid = 1;
+    packet.sourceid = 1; // Source ID is 1 (this node)
     
     for(i = 0; i < 4; i++) {
-        packet.mincost[i] = dt1.costs[i][i];
-        node1_mincost[i] = dt1.costs[i][i];
+        packet.mincost[i] = dt1.costs[i][i]; // Minimum cost to each node is updated in the packet
+        node1_mincost[i] = dt1.costs[i][i]; // Store minimum costs for node 1
     }
 
     printf("Initial distance table for node 1:\n");
@@ -74,17 +74,17 @@ void rtupdate1(rcvdpkt)
            rcvdpkt->mincost[2], rcvdpkt->mincost[3]);
 
     int i, j;
-    int src = rcvdpkt->sourceid;
-    int dest = rcvdpkt->destid;
+    int src = rcvdpkt->sourceid; // Source ID of the received packet
 
-    int dt_changed = 0;
+    int dt_changed = 0; // Flag to check if distance table changed
     
     // Update distance table based on received packet
     for(i = 0; i < 4; i++) {
         // Check if the cost to node i through the received packet is less than the current cost
+        // If so, update the distance table
         if(dt1.costs[i][src] > rcvdpkt->mincost[i] + dt1.costs[src][src]) {
             dt1.costs[i][src] = rcvdpkt->mincost[i] + dt1.costs[src][src];
-            dt_changed = 1;
+            dt_changed = 1; // Distance table changed
         } 
     }
 
@@ -95,7 +95,7 @@ void rtupdate1(rcvdpkt)
     }
 
     int prev_mincost[4];
-    memcpy(prev_mincost, node1_mincost, sizeof(node1_mincost));
+    memcpy(prev_mincost, node1_mincost, sizeof(node1_mincost)); // Store previous minimum costs
     
 
     // Calculate minimum costs
@@ -103,21 +103,21 @@ void rtupdate1(rcvdpkt)
       int min = 999;
       for(j = 0; j < 4; j++) {
           if(dt1.costs[i][j] < min)
-              min = dt1.costs[i][j];
+              min = dt1.costs[i][j]; // Find minimum cost to node i
       }
-      node1_mincost[i] = min;
+      node1_mincost[i] = min; // Update minimum costs for node 1
     }
 
-    int changed = 0;
+    int changed = 0; // Flag to check if minimum costs changed
     for(int i=0;i<4;i++){
         if(prev_mincost[i]!=node1_mincost[i]){
-            changed = 1;
+            changed = 1; // Minimum costs changed
         }
     }
     
     // If distance table changed, send updates to neighbors
     if(changed) {
-        struct rtpkt packet;
+        struct rtpkt packet; // Create a new packet to send updates
         packet.sourceid = 1;
         for (i = 0; i < 4; i++)
             packet.mincost[i] = node1_mincost[i];
@@ -126,22 +126,22 @@ void rtupdate1(rcvdpkt)
         printdt1(&dt1);
         printf("Node 1 sending routing packets to neighbors with mincost: %d %d %d %d\n",
                 packet.mincost[0], packet.mincost[1], 
-                packet.mincost[2], packet.mincost[3]);
+                packet.mincost[2], packet.mincost[3]); // Print updated minimum costs
         printf("\n");
 
         // Send to each neighbor
-        packet.destid = 0;
+        packet.destid = 0; // Send to node 0
         tolayer2(packet);
-        packet.destid = 2;
+        packet.destid = 2; // Send to node 2
         tolayer2(packet);
-        packet.destid = 3;
+        packet.destid = 3; // Send to node 3
         tolayer2(packet);
         
         
     } else {
         printf("Minimum costs NOT updated\n");
         printf("Current distance table for node 1:\n");
-        printdt1(&dt1);
+        printdt1(&dt1); // Print current distance table
     }
 }
 

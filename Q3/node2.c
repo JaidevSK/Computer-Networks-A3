@@ -7,10 +7,10 @@ extern struct rtpkt {
   int mincost[4];    /* min cost to node 0 ... 3 */
   };
 
-extern int TRACE;
+extern int TRACE; // TRACE is a global variable that controls the level of debugging output
 extern int YES;
 extern int NO;
-extern float clocktime;
+extern float clocktime; // Current simulation time
 
 // int connectcosts2[4] = { 3,  1,  0, 2 };
 
@@ -22,14 +22,14 @@ struct distance_table
 
 /* students to write the following two routines, and maybe some others */
 
-int node2_mincost[4];
+int node2_mincost[4]; // Minimum cost to each node from node 2
 
 void rtinit2() 
 {
     printf("\n=== At time t=%.3f, rtinit2() called ===\n", clocktime);
     int i, j;
     
-    // Initialize distance table with infinity
+    // Initialize distance table with infinity (~999)
     for(i = 0; i < 4; i++)
         for(j = 0; j < 4; j++)
             dt2.costs[i][j] = 999;
@@ -42,16 +42,16 @@ void rtinit2()
     
 
     // Send initial distance vector to neighbors
-    struct rtpkt packet;
-    packet.sourceid = 2;
+    struct rtpkt packet; 
+    packet.sourceid = 2; // Source ID is 2 (this node)
     
     for(i = 0; i < 4; i++) {
-        packet.mincost[i] = dt2.costs[i][i];
-        node2_mincost[i] = dt2.costs[i][i];
+        packet.mincost[i] = dt2.costs[i][i]; // Minimum cost to each node is updated in the packet
+        node2_mincost[i] = dt2.costs[i][i]; // Store minimum costs for node 2
     }
 
     printf("Initial distance table for node 2:\n");
-    printdt2(&dt2);
+    printdt2(&dt2); // Print initial distance table
     
     printf("Node 2 sending routing packets to neighbors (0, 1, 3):\n");
     printf("  mincost: %d %d %d %d\n", packet.mincost[0], packet.mincost[1], 
@@ -77,16 +77,17 @@ void rtupdate2(rcvdpkt)
 
     int i, j;
 
-    int src = rcvdpkt->sourceid;
-    int dest = rcvdpkt->destid;
+    int src = rcvdpkt->sourceid; // Source ID of the received packet
     
-    int dt_changed = 0;
+    int dt_changed = 0; // Flag to check if distance table changed
 
     // Update distance table based on received packet
     for(i = 0; i < 4; i++) {
+        // Check if the cost to node i through the received packet is less than the current cost
+        // If so, update the distance table
         if(dt2.costs[i][src] > rcvdpkt->mincost[i] + dt2.costs[src][src]) {
             dt2.costs[i][src] = rcvdpkt->mincost[i] + dt2.costs[src][src];
-            dt_changed = 1;
+            dt_changed = 1; // Distance table changed
         }
     }
 
@@ -97,7 +98,7 @@ void rtupdate2(rcvdpkt)
     }
     
     int prev_mincost[4];
-    memcpy(prev_mincost, node2_mincost, sizeof(node2_mincost));
+    memcpy(prev_mincost, node2_mincost, sizeof(node2_mincost)); // Store previous minimum costs
     
 
     // Calculate minimum costs
@@ -107,19 +108,19 @@ void rtupdate2(rcvdpkt)
           if(dt2.costs[i][j] < min)
               min = dt2.costs[i][j];
       }
-      node2_mincost[i] = min;
+      node2_mincost[i] = min; // Update minimum costs for node 2
     }
 
-    int changed = 0;
+    int changed = 0; // Flag to check if minimum costs changed
     for(int i=0;i<4;i++){
         if(prev_mincost[i]!=node2_mincost[i]){
-            changed = 1;
+            changed = 1; // Minimum costs changed
         }
     }
 
     // If distance table changed, send updates to neighbors
     if(changed) {
-        struct rtpkt packet;
+        struct rtpkt packet; // Create a new packet to send updates
         packet.sourceid = 2;
         for (i = 0; i < 4; i++)
             packet.mincost[i] = node2_mincost[i];
@@ -132,18 +133,18 @@ void rtupdate2(rcvdpkt)
         printf("\n");
 
         // Send to each neighbor
-        packet.destid = 0;
+        packet.destid = 0; // Send to node 0
         tolayer2(packet);
-        packet.destid = 1;
+        packet.destid = 1; // Send to node 1
         tolayer2(packet);
-        packet.destid = 3;
+        packet.destid = 3; // Send to node 3
         tolayer2(packet);
         
         
     } else {
         printf("Minimum costs NOT updated\n");
         printf("Current distance table for node 2:\n");
-        printdt2(&dt2);
+        printdt2(&dt2); // Print current distance table
     }
 }
 
