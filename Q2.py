@@ -86,3 +86,10 @@ if __name__ == '__main__':
 
     CLI(net) # I start the Mininet command-line interface (CLI) to allow interaction with the network.
     net.stop() # I stop the Mininet instance when the CLI is exited.
+
+## References:
+# https://linux.die.net/man/8/iptables
+# https://sudamtm.medium.com/iptables-a-comprehensive-guide-276b8604eff1
+# https://linux.die.net/man/8/ip
+# https://phoenixnap.com/kb/linux-ip-command-examples
+# man pages for ip, iptables as well as linux documentation
