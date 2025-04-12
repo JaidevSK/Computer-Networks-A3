@@ -34,7 +34,7 @@ sudo python3 Q2_.py
 ```
 
 ### Q3
-- To compile, run:
+- To compile, use any compiler which compiles all the C files into an executable. To use MSVC, the below command can be used.
 ```
 cl /W4 /Fe:routing.exe node0.c node1.c node2.c node3.c distance_vectore.c
 ```
@@ -42,4 +42,5 @@ cl /W4 /Fe:routing.exe node0.c node1.c node2.c node3.c distance_vectore.c
 ```
 routing.exe
 ```
+To enable debugging, give TRACE=2 when prompted.
 
